@@ -1,5 +1,6 @@
 import { GeistSans } from "geist/font/sans";
 import { type AppType } from "next/app";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 import { api } from "~/utils/api";
 

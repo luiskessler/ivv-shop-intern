@@ -1,20 +1,79 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "mysql"
-    url      = env("DATABASE_URL")
+  provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
-model Post {
-    id        Int      @id @default(autoincrement())
-    name      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+enum UserRole {
+  ADMIN
+  USER
+}
 
-    @@index([name])
+model User {
+  id        Int       @id @default(autoincrement())
+  name      String
+  surname   String
+  email     String    @unique
+  password  String
+  role      UserRole
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  Session   Session[]
+  orders    Order[]
+}
+
+model OrderItem {
+  id          String @id @default(uuid()) // Eindeutige ID für jedes OrderItem
+  orderId     String // Verweist auf die Bestellung
+  productName String // Name des Produkts
+  productId   String // Verweist auf das Produkt
+  quantity    Int // Menge des Produkts in der Bestellung
+  price       Float // Preis pro Einheit des Produkts zum Zeitpunkt der Bestellung
+  size        String
+  color       String
+
+  order   Order   @relation("OrderItemsRelation", fields: [orderId], references: [id]) // Namensgebung der Beziehung zur Bestellung
+  product Product @relation("ProductOrderItems", fields: [productId], references: [id]) // Namensgebung der Beziehung zum Produkt
+}
+
+model Order {
+  id           String      @id @default(uuid())
+  userId       Int
+  status       OrderStatus @default(OPEN)
+  paymentID    String
+  order_number String
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  products OrderItem[] @relation("OrderItemsRelation") // Namensgebung der Beziehung zu OrderItems
+  user     User        @relation(fields: [userId], references: [id])
+}
+
+model Product {
+  id           String @id @default(uuid())
+  name         String
+  imageURLs    Json
+  description  String
+  price        Float
+  category     String
+  size         Json?
+  colorVariant Json?
+
+  orders OrderItem[] @relation("ProductOrderItems") // Namensgebung der Beziehung zu OrderItems
+}
+
+model Session {
+  id        Int      @id @default(autoincrement())
+  sessionId String   @unique
+  userId    Int
+  expires   DateTime
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+enum OrderStatus {
+  OPEN
+  COMPLETED
 }

@@ -1,3 +1,4 @@
+
 /**
  * YOU PROBABLY DON'T NEED TO EDIT THIS FILE, UNLESS:
  * 1. You want to modify request context (see Part 1).
@@ -6,8 +7,11 @@
  * TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will
  * need to use are documented accordingly near the end.
  */
-import { initTRPC } from "@trpc/server";
+import { initTRPC, TRPCError } from "@trpc/server";
 import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
+
+import { parse } from "cookie";
+
 import superjson from "superjson";
 import { ZodError } from "zod";
 
@@ -45,9 +49,63 @@ const createInnerTRPCContext = (_opts: CreateContextOptions) => {
  *
  * @see https://trpc.io/docs/context
  */
-export const createTRPCContext = (_opts: CreateNextContextOptions) => {
-  return createInnerTRPCContext({});
+export async function createTRPCContext({req, res}: CreateNextContextOptions) {
+  const cookies = parse(req.headers.cookie ?? '')
+  const session = cookies.sessionId ?? null
+
+  console.log("SessionCookie", session)
+
+  let isUserLoggedIn = false
+
+  if (!session) {
+     // falls keine SessionID vorhanden, wird der User nicht eingeloggt - behält normale Zugriffsrechte
+     return { isUserLoggedIn: false, user: null, req, res, db }
+  }
+
+  const sessionData = await db.session.findUnique({
+    where: {
+      sessionId: session,
+    },
+  }) // query nach SessionID
+
+  console.log("Session Data", sessionData)
+
+  const userData = await db.user.findFirst({
+    where: {
+      id: sessionData?.userId!,
+    },
+  })
+
+  console.log("Session Data", sessionData)
+
+  if (!sessionData || sessionData.expires < new Date()) {
+    return { isUserLoggedIn: false, user: null, req, res, db, message: "Session abgelaufen oder invalide."}
+  } // falls SessionID nicht vorhanden oder abgelaufen, wird der User nicht eingeloggt - behält normale Zugriffsrechte
+  else {
+    isUserLoggedIn = true
+    return {
+      isUserLoggedIn: isUserLoggedIn,
+      session: sessionData ? sessionData : null,
+      user: userData ? userData : null,
+      req, 
+      res,
+      db,
+    }
+  }
 };
+
+/*
+ * 
+ * 
+ * 
+ * Kontext hat alle relevanten userspezifischen Informationen wird bei jeder Req gecheckt
+ * => nur auth kann auch protectedProcedure aufrufen, 
+ * d.h nur wenn sessionID cookie vorhanden und valide, dann Zugriff auf protectedProcedure calls
+ * Cookie wird NUR nach Login verliehen mit 24h Gültigkeit, genau wie Session
+ * 
+ * 
+ * 
+*/
 
 /**
  * 2. INITIALIZATION
@@ -115,11 +173,38 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
   return result;
 });
 
-/**
- * Public (unauthenticated) procedure
- *
- * This is the base piece you use to build new queries and mutations on your tRPC API. It does not
- * guarantee that a user querying is authorized, but you can still access user session data if they
- * are logged in.
- */
-export const publicProcedure = t.procedure.use(timingMiddleware);
+export const isAuthenticated = t.middleware(({ ctx, next }) => {
+  if (!ctx.isUserLoggedIn) {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "User is not logged in",
+    });
+  }
+
+  return next({
+    ctx: {
+      ...ctx
+    }
+  });
+});
+
+export const isAdmin = t.middleware(({ctx, next}) => {
+  if (!ctx.isUserLoggedIn || ctx.user?.role !== "ADMIN") {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "User not logged in or not an Admin"
+    }); 
+  }
+
+  return next({
+      ctx: {
+        ...ctx
+      }
+    })
+})
+
+export const publicProcedure = t.procedure.use(timingMiddleware); // fetchen von Daten / Produkten / öffentlicher Content
+
+export const protectedProcedure = t.procedure.use(isAuthenticated).use(timingMiddleware); // ProtectedProcedure, für Authentifizierung, erstellung von Orders etc. - fetchen von privaten Daten 
+
+export const adminProcedure = t.procedure.use(isAdmin).use(timingMiddleware); // FÜr alle Admin-Procedures / API calls
