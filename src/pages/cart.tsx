@@ -1,3 +1,4 @@
+import { TrashIcon } from "lucide-react";
 import React from "react";
 import Navbar from "~/components/navbar";
 import { api } from "~/utils/api";
@@ -25,6 +26,7 @@ export default function Home() {
   const totalItems = cartItems.length;
 
   const checkoutMutation = api.checkout.createNewCheckout.useMutation();
+  const removeFromCartMutation = api.cart.removeItemFromCart.useMutation();
 
   const handleCheckout = async () => {
     const products = cartItems.map((item: CartItem) => ({
@@ -41,6 +43,10 @@ export default function Home() {
     const res = await checkoutMutation.mutateAsync({ products });
 
     setResponseQRCode(res.checkoutLink);
+  };
+
+  const removeItem = (item: CartItem) => {
+    removeFromCartMutation.mutate(item);
   };
 
   return (
@@ -65,7 +71,7 @@ export default function Home() {
                         alt={item.name}
                       />
                     </div>
-                    <div className="flex w-full flex-col">
+                    <div className="flex w-full flex-col gap-4">
                       <div className="flex w-full items-center justify-between">
                         <p className="text-xl font-medium">{item.name}</p>
                         <p className="text-lg font-medium">
@@ -78,26 +84,35 @@ export default function Home() {
                           )}
                         </p>
                       </div>
-                      {item.size && item.colorVariant && (
-                        <div className="flex flex-col gap-1">
-                          <p>{item.size.toUpperCase()}</p>
-                          <p>{item.colorVariant}</p>
+                      <div className="flex w-full justify-between border">
+                        <div className="flex w-fit flex-col gap-4 border">
+                          {item.size && item.colorVariant && (
+                            <div className="flex flex-col gap-1">
+                              <p>{item.size.toUpperCase()}</p>
+                              <p>{item.colorVariant}</p>
+                            </div>
+                          )}
+                          <div className="flex w-fit flex-col gap-2 pt-2">
+                            <label htmlFor="quantity">Menge:</label>
+                            <input
+                              type="number"
+                              name="quantity"
+                              min={1}
+                              max={10}
+                              value={item.orderQuantity}
+                              //onChange={(e) => setQuantity(Number(e.target.value))}
+                              accept="number"
+                              id="quantity"
+                              className="h-10 rounded-md border px-2 shadow-md"
+                            />
+                          </div>{" "}
                         </div>
-                      )}
-                      <div className="flex w-fit flex-col gap-2 pt-2">
-                        <label htmlFor="quantity">Menge:</label>
-                        <input
-                          type="number"
-                          name="quantity"
-                          min={1}
-                          max={10}
-                          value={item.orderQuantity}
-                          //onChange={(e) => setQuantity(Number(e.target.value))}
-                          accept="number"
-                          id="quantity"
-                          className="h-10 rounded-md border px-2 shadow-md"
-                        />
-                      </div>{" "}
+                        <div className="flex items-end justify-end">
+                          <button onClick={() => removeItem(item)}>
+                            <TrashIcon size={16} />
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))}

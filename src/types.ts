@@ -1,11 +1,9 @@
 export interface Product {
-  id: string;
+  id?: string;
   name: string;
   imageURLs: string[]; // imageURLs now match with the `ImageURL` relation
   description: string;
   price: number;
-  isFeatured: boolean;
-  stock: number;
   category: string;
   size?: string[]; // ["XS", "S", "M", "L", "XL", "XXL"]
   colorVariant?: ColorVariant[]; // [{ name: "black", hex: "#000000", imageURL: "https://placehold.co/600x400" }]
@@ -14,7 +12,6 @@ export interface Product {
 export interface ColorVariant {
   name: string;
   hex: string;
-  imageURL: string;
 }
 
 

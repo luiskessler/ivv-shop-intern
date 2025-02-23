@@ -5,10 +5,12 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { api } from "~/utils/api";
 
 import "~/styles/globals.css";
+import { Toaster } from "sonner";
 
 const MyApp: AppType = ({ Component, pageProps }) => {
   return (
     <div className={GeistSans.className}>
+      <Toaster />
       <Component {...pageProps} />
     </div>
   );

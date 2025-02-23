@@ -16,7 +16,6 @@ export const cartRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      console.log("Received input:", input);
 
       const cookies = parse(ctx.req.headers.cookie ?? "");
       let cart: any[] = [];
@@ -60,7 +59,55 @@ export const cartRouter = createTRPCRouter({
         })
       );
 
-      console.log("Updated cart:", cart);
+      return { success: true, cart };
+    }),
+
+  removeItemFromCart: publicProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        name: z.string(),
+        price: z.number(),
+        colorVariant: z.string(),
+        size: z.string(),
+        orderQuantity: z.number(),
+        imageURL: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+
+      const cookies = parse(ctx.req.headers.cookie ?? "");
+      let cart: any[] = [];
+
+      if (cookies.cart) {
+        try {
+          cart = JSON.parse(decodeURIComponent(cookies.cart));
+        } catch (error) {
+          console.error("Error parsing cart from cookies:", error);
+        }
+      }
+
+      const existingItemIndex = cart.findIndex(
+        (item) =>
+          item.id === input.id &&
+          item.colorVariant === input.colorVariant &&
+          item.size === input.size
+      );
+
+      if (existingItemIndex !== -1) {
+        cart.splice(existingItemIndex, 1);
+      }
+
+      ctx.res?.setHeader(
+        "Set-Cookie",
+        serialize("cart", encodeURIComponent(JSON.stringify(cart)), {
+          httpOnly: true,
+          secure: process.env.NODE_ENV !== "development",
+          sameSite: "strict",
+          path: "/",
+        })
+      );
+
       return { success: true, cart };
     }),
 
@@ -72,7 +119,6 @@ export const cartRouter = createTRPCRouter({
     if (!cartCookie) {
       return null
     }
-
     try {
       return JSON.parse(decodeURIComponent(cartCookie))
     } catch (error) {
@@ -92,7 +138,6 @@ export const cartRouter = createTRPCRouter({
 
     try {
       const cartItems = JSON.parse(decodeURIComponent(cartCookie)) 
-      console.log(cartItems)
       return cartItems  
     } catch (error) {
       console.error("Error parsing cart from cookies:", error);

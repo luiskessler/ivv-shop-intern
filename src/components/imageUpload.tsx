@@ -2,6 +2,7 @@ import axios from "axios";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { api } from "~/utils/api";
+import { toast } from "sonner";
 
 export const ImageUpload = ({
   onImageUpload,
@@ -16,12 +17,13 @@ export const ImageUpload = ({
   const [isUploading, setIsUploading] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isQueryEnabled, setIsQueryEnabled] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  /*const { data: presignedURL, refetch: refetchPresignedUrl } =
-    api.images.generatePresignedUrl.useQuery(
+  const { data: presignedURL, refetch: refetchPresignedUrl } =
+    api.products.createPresignedURL.useQuery(
       {
-        imageUrl: selectedFile?.name || "",
-        location: type,
+        fileName: selectedFile?.name || "",
+        fileType: selectedFile?.type || "",
       },
       {
         enabled: !!selectedFile && !!isQueryEnabled,
@@ -38,21 +40,32 @@ export const ImageUpload = ({
 
   useEffect(() => {
     if (presignedURL) {
-      axios.put(presignedURL.presignedUrl!, selectedFile!, {
-        headers: {
-          "Content-Type": selectedFile!.type,
-        },
-      });
-      toast.success(`${selectedFile!.name} uploaded successfully!`);
-      onImageUpload(`${selectedFile!.name}`);
-      console.log(presignedURL.presignedUrl);
+      setIsUploading(true);
+      axios
+        .put(presignedURL.uploadURL, selectedFile!, {
+          headers: {
+            "Content-Type": selectedFile!.type,
+          },
+        })
+        .then(() => {
+          toast.success(`${selectedFile!.name} erfolgreich hochgeladen!`);
+          onImageUpload?.(`${selectedFile!.name}`);
+        })
+        .catch((error) => {
+          toast.error(`Fehler beim Hochladen: ${error.message}`);
+        })
+        .finally(() => {
+          setIsUploading(false);
+        });
+      console.log(presignedURL);
     }
-  }, [presignedURL]); */
+  }, [presignedURL]);
 
   const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     const file = event.dataTransfer.files[0];
     if (file && file.type.startsWith("image/")) {
+      setSelectedFile(file);
       setSelectedFiles((prevFiles) => [...prevFiles, file]);
     }
     setIsDragging(false);
@@ -61,6 +74,7 @@ export const ImageUpload = ({
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && file.type.startsWith("image/")) {
+      setSelectedFile(file);
       setSelectedFiles((prevFiles) => [...prevFiles, file]);
     }
   };

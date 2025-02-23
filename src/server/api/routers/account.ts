@@ -26,4 +26,22 @@ export const accountRouter = createTRPCRouter({
 
         return userOrders;
     }),
+
+    getAllOrders: protectedProcedure
+    .query(async ({ ctx }) => {
+        if (!ctx.user) {
+            throw new TRPCError({ code: "UNAUTHORIZED" });
+        }
+
+        const allOrders = await db.order.findMany({
+            where: {
+                userId: ctx.user.id,
+            },
+            include: {
+                products: true,
+            },
+        });
+
+        return allOrders;
+    }),
 });

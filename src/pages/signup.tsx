@@ -7,12 +7,11 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/router";
 
-// ✅ Define validation schema with Zod
 const registerSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  surname: z.string().min(1, "Surname is required"),
-  email: z.string().email("Invalid email format"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  name: z.string().min(1, "Bitte Name ausfüllen."),
+  surname: z.string().min(1, "Bitte Nachnamen ausfüllen."),
+  email: z.string().email("E-Mail ist ungültig.").includes("@ivv.de"),
+  password: z.string().min(6, "Passwort muss mindestens 6 Zeichen lang sein."),
 });
 
 type RegisterSchemaType = z.infer<typeof registerSchema>;

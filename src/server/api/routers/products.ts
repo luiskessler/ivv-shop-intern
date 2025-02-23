@@ -5,6 +5,7 @@ import bcrypt from "bcrypt";
 import { serialize } from "cookie";
 import { ColorVariant } from "~/types";
 import { TRPCError } from "@trpc/server";
+import { s3 } from "~/server/s3";
 
 export const productRouter = createTRPCRouter({
   createNewProduct: adminProcedure
@@ -13,14 +14,12 @@ export const productRouter = createTRPCRouter({
         imageURLs: z.array(z.string()).optional(),
         description: z.string(),
         price: z.number(),
-        isFeatured: z.boolean(),
         category: z.string(),
         size: z.array(z.string()),
         colorVariant: z.array(
           z.object({
             name: z.string(),
             hex: z.string(),
-            imageURL: z.string(),
           })
         ),
      }))
@@ -37,7 +36,38 @@ export const productRouter = createTRPCRouter({
             },
         });
     }),
+  
+    createPresignedURL: protectedProcedure
+    .input(z.object({
+      fileName: z.string(),
+      fileType: z.string(),
+    }))
+    .query(async ({ input }) => {
+      const { fileName, fileType } = input;
 
+      
+      const s3Params = {
+        Bucket: process.env.AWS_S3_BUCKET_NAME, 
+        Key: `product-images/${fileName}`, 
+        Expires: 60 * 5, 
+        ContentType: fileType, 
+        ACL: 'public-read', 
+      };
+
+      try {
+        
+        const uploadURL = await s3.getSignedUrlPromise('putObject', s3Params);
+
+        return {
+          uploadURL, 
+        };
+      } catch (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to generate presigned URL",
+        });
+      }
+    }),
   
   getAllProducts: publicProcedure
     .query(async ({ ctx }) => {
@@ -50,7 +80,6 @@ export const productRouter = createTRPCRouter({
           ? (product.colorVariant as unknown as ColorVariant[]).map((item) => ({
               name: item.name,
               hex: item.hex,
-              imageURL: item.imageURL,
             }))
           : [],
 
@@ -90,14 +119,13 @@ export const productRouter = createTRPCRouter({
         });
       }
   
-      // Format the product data
+      
       const formattedProduct = {
         ...product,
         colorVariant: Array.isArray(product.colorVariant)
           ? (product.colorVariant as unknown as ColorVariant[]).map((item) => ({
               name: item.name,
               hex: item.hex,
-              imageURL: item.imageURL,
             }))
           : [],
   
@@ -110,6 +138,4 @@ export const productRouter = createTRPCRouter({
   
       return formattedProduct;
     }),
-  
-
 });
