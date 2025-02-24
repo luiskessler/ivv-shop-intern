@@ -84,7 +84,12 @@
 ### **Schritt 1: Admin Benutzer erstellen**
 
 1. Um einen **Admin User** zu erstellen, kannst du dich über die **Signup-Funktion** im Shop anmelden.
-2. Stelle sicher, dass bei der Registrierung die **Rolle des Benutzers auf "ADMIN" gesetzt** wird, sodass der Benutzer vollen Zugriff auf das Admin-Panel hat.
+2. **Rolle des Benutzers auf "ADMIN" gesetzt** (in der Datenbank) wird, sodass der Benutzer vollen Zugriff auf das Admin-Panel hat.
+
+## 4. **Produkte in /admin einrichten**
+
+1. Einfach /admin aufrufen und dann unter dem Reiter **"Produkte"** die **"Neues Produkt hinzufügen"** Schaltfläche drücken.
+2. Einfach neues Produkt hinzufügen
 
 ---
 
