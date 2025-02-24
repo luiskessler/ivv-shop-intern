@@ -6,13 +6,19 @@ import { api } from "~/utils/api";
 
 import "~/styles/globals.css";
 import { Toaster } from "sonner";
+import Head from "next/head";
 
 const MyApp: AppType = ({ Component, pageProps }) => {
   return (
-    <div className={GeistSans.className}>
-      <Toaster />
-      <Component {...pageProps} />
-    </div>
+    <>
+      <Head>
+        <title>ivv Shop</title>
+      </Head>
+      <div className={GeistSans.className}>
+        <Toaster />
+        <Component {...pageProps} />
+      </div>
+    </>
   );
 };
 
