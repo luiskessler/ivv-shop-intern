@@ -59,7 +59,14 @@ const ProductsComponent = () => {
               <X size={20} />
             </button>
             <p>Neues Produkt hinzufügen</p>
-            <ImageUpload />
+            <ImageUpload
+              onImageUpload={(uploadedImageUrl) => {
+                setProductImageURLs((prevURLs) => [
+                  ...prevURLs,
+                  uploadedImageUrl,
+                ]);
+              }}
+            />
             <div className="grid grid-cols-3 gap-x-2 gap-y-4">
               <input
                 type="text"

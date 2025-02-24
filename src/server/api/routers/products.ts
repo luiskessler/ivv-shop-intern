@@ -11,7 +11,7 @@ export const productRouter = createTRPCRouter({
   createNewProduct: adminProcedure
     .input(z.object({
         name: z.string(),
-        imageURLs: z.array(z.string()).optional(),
+        imageURLs: z.array(z.string()),
         description: z.string(),
         price: z.number(),
         category: z.string(),
@@ -27,7 +27,7 @@ export const productRouter = createTRPCRouter({
         return ctx.db.product.create({
             data: {
                 name: input.name,
-                imageURLs: input.imageURLs || ["https://placehold.co/400x400/", "https://placehold.co/400x400/"],
+                imageURLs: input.imageURLs!,
                 description: input.description,
                 price: input.price,
                 category: input.category,
@@ -41,26 +41,22 @@ export const productRouter = createTRPCRouter({
     .input(z.object({
       fileName: z.string(),
       fileType: z.string(),
+      expiresIn: z.number().optional().default(60 * 5),
     }))
     .query(async ({ input }) => {
-      const { fileName, fileType } = input;
-
-      
+      const { fileName, fileType, expiresIn } = input;
+  
       const s3Params = {
-        Bucket: process.env.AWS_S3_BUCKET_NAME, 
-        Key: `product-images/${fileName}`, 
-        Expires: 60 * 5, 
-        ContentType: fileType, 
-        ACL: 'public-read', 
+        Bucket: process.env.AWS_S3_BUCKET_NAME,
+        Key: `product-images/${fileName}`,
+        Expires: expiresIn,
+        ContentType: fileType,
+        ACL: 'public-read',
       };
-
+  
       try {
-        
         const uploadURL = await s3.getSignedUrlPromise('putObject', s3Params);
-
-        return {
-          uploadURL, 
-        };
+        return { uploadURL };
       } catch (error) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -68,6 +64,7 @@ export const productRouter = createTRPCRouter({
         });
       }
     }),
+  
   
   getAllProducts: adminProcedure
     .query(async ({ ctx }) => {

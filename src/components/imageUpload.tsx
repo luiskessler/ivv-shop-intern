@@ -49,7 +49,10 @@ export const ImageUpload = ({
         })
         .then(() => {
           toast.success(`${selectedFile!.name} erfolgreich hochgeladen!`);
-          onImageUpload?.(`${selectedFile!.name}`);
+
+          const uploadedImageUrl = `https://${process.env.AWS_S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/product-images/${selectedFile!.name}`;
+
+          onImageUpload?.(uploadedImageUrl);
         })
         .catch((error) => {
           toast.error(`Fehler beim Hochladen: ${error.message}`);
@@ -57,7 +60,6 @@ export const ImageUpload = ({
         .finally(() => {
           setIsUploading(false);
         });
-      console.log(presignedURL);
     }
   }, [presignedURL]);
 
