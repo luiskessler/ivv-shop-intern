@@ -58,8 +58,8 @@ export default function Home() {
   return (
     <div className="flex h-fit flex-col space-y-[10vh] py-[6vh]">
       <Navbar />
-      <div className="container grid h-full grid-cols-3 border md:w-[95%]">
-        <div className="col-span-1 h-full border">
+      <div className="container grid h-full grid-cols-3 md:w-[95%]">
+        <div className="col-span-full h-full lg:col-span-1">
           <Carousel
             interval={3500}
             indicators={false}
@@ -74,13 +74,13 @@ export default function Home() {
                   <img
                     src={imageURL!.toString()}
                     alt={productData.data.name}
-                    className="aspect-square w-full border object-cover"
+                    className="aspect-square w-full object-cover"
                   ></img>
                 </Carousel.Item>
               ))}
           </Carousel>
         </div>
-        <div className="col-span-2 flex flex-col space-y-4 px-8 py-4">
+        <div className="col-span-full flex flex-col space-y-4 px-8 py-4 lg:col-span-2">
           <div className="flex flex-col space-y-8">
             <div className="flex flex-col space-y-1">
               <h1 className="text-3xl">{productData.data?.name}</h1>

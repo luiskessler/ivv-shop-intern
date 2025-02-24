@@ -68,9 +68,9 @@ export default function Home() {
               )}
           </Carousel>
         </div>
-        <div className="container flex h-screen flex-col items-center space-y-[4vh] overflow-hidden md:w-[95%]">
+        <div className="container flex h-fit flex-col items-center space-y-[4vh] overflow-hidden md:w-[95%]">
           <h2 className="text-4xl">Den ivv-Merch entdecken</h2>
-          <div className="flex w-full flex-col gap-2 border-b pb-3">
+          <div className="flex h-fit w-full flex-col gap-2 overflow-x-scroll border-b pb-3">
             <div className="flex w-full justify-start">
               <button
                 onClick={() => setIsFiltersOpen(!isFiltersOpen)}

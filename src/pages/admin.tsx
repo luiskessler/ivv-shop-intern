@@ -104,7 +104,7 @@ const ProductsComponent = () => {
                 />
               </div>
 
-              <div className="col-span-3">
+              <div className="col-span-3 flex flex-col gap-3">
                 <button
                   onClick={() =>
                     setProductColorVariants([

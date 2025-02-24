@@ -6,14 +6,14 @@ export default function FooterComponent() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <div className="flex h-[10vh] w-full justify-between border-t p-2 px-4">
+    <div className="h-[10vh] w-full justify-between border-t p-2 px-4 lg:flex-row">
       <Link
         href={"/"}
         className="flex aspect-video h-full flex-col items-center justify-center"
       >
         <Logo />
       </Link>
-      <ul className="flex items-center gap-4 text-sm">
+      <ul className="flex flex-col items-center gap-4 text-sm lg:flex-row">
         <li>
           <Link href={"https://ivv.de/de/Datenschutz"}>Datenschutz</Link>
         </li>
