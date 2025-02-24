@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure, publicProcedure } from "~/server/api/trpc";
+import { adminProcedure, createTRPCRouter, protectedProcedure, publicProcedure } from "~/server/api/trpc";
 import { db } from "~/server/db";
 import bcrypt from "bcrypt";
 import { parse, serialize } from "cookie";
@@ -27,18 +27,15 @@ export const accountRouter = createTRPCRouter({
         return userOrders;
     }),
 
-    getAllOrders: protectedProcedure
+    getAllOrders: adminProcedure
     .query(async ({ ctx }) => {
         if (!ctx.user) {
             throw new TRPCError({ code: "UNAUTHORIZED" });
         }
 
         const allOrders = await db.order.findMany({
-            where: {
-                userId: ctx.user.id,
-            },
             include: {
-                products: true,
+                products: true, 
             },
         });
 

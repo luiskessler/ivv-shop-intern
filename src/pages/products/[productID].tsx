@@ -50,6 +50,8 @@ export default function Home() {
         orderQuantity: quantity,
         imageURL: productData.data!.imageURLs[0]!.toString(),
       });
+
+      router.push("/cart");
     }
   };
 

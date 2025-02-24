@@ -125,16 +125,16 @@ export const authRouter = createTRPCRouter({
     throw new Error("Session not found");
   }),
 
-  deleteUser: publicProcedure
-    .input(z.object({ email: z.string() }))
-    .mutation(async ({ input }) => {
-      if (!input.email) {
+  deleteUser: protectedProcedure
+    .input(z.object({  }))
+    .mutation(async ({ ctx }) => {
+      if (!ctx.user?.email) {
         throw new Error("Missing required fields");
       }
 
       const user = await db.user.findUnique({
         where: {
-          email: input.email,
+          email: ctx.user?.email,
         },
       });
 

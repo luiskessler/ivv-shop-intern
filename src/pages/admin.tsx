@@ -154,44 +154,37 @@ const ProductsComponent = () => {
         </div>
       )}
 
-      <button
-        onClick={() => setIsAddProductModalOpen(true)}
-        className="flex h-10 w-full items-center justify-center rounded-md border text-center shadow-lg"
-      >
-        Neues Produkt hinzufügen
-      </button>
+      <div className="flex flex-col gap-4">
+        <button
+          onClick={() => setIsAddProductModalOpen(true)}
+          className="flex h-10 w-full items-center justify-center rounded-md border text-center shadow-lg"
+        >
+          Neues Produkt hinzufügen
+        </button>
 
-      {products && !isProductsLoading && (
-        <div className="grid grid-cols-1 gap-2">
-          {products.map((product) => (
-            <div
-              key={product.id}
-              className="relative flex h-[10vh] items-center rounded-md border p-2"
-            >
-              <img
-                src={
-                  Array.isArray(product.imageURLs)
-                    ? product.imageURLs[0]?.toString()!
-                    : "default.jpg"
-                }
-                className="h-full w-auto rounded-sm object-cover"
-                alt={product.name}
-              />
-              <div className="ml-4 flex flex-col justify-center">
-                <p className="text-xl font-bold">{product.name}</p>
-                <p>{product.price}€</p>
-                <p className="text-sm">{product.description}</p>
-                <p className="text-sm">Kategorie: {product.category}</p>
-                <p className="text-sm">Größen: {product.size.join(", ")}</p>
-                <p className="text-sm">
-                  Farben:{" "}
-                  {product.colorVariant.map((color) => color.name).join(", ")}
-                </p>
+        {products && !isProductsLoading && (
+          <div className="grid grid-cols-1 gap-2">
+            {products.map((product) => (
+              <div
+                key={product.id}
+                className="relative flex h-fit items-center rounded-md border p-2"
+              >
+                <div className="ml-4 flex flex-col justify-center">
+                  <p className="text-xl font-bold">{product.name}</p>
+                  <p>{product.price}€</p>
+                  <p className="text-sm">{product.description}</p>
+                  <p className="text-sm">Kategorie: {product.category}</p>
+                  <p className="text-sm">Größen: {product.size.join(", ")}</p>
+                  <p className="text-sm">
+                    Farben:{" "}
+                    {product.colorVariant.map((color) => color.name).join(", ")}
+                  </p>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
     </>
   );
 };
@@ -205,22 +198,47 @@ const OrdersComponent = () => {
   return (
     <div className="grid grid-cols-1 gap-4">
       {orders &&
-        orders.map((order) => (
-          <div key={order.id} className="rounded-md border p-4">
-            <h3 className="text-lg font-bold">Order ID: {order.id}</h3>
-            <p>Status: {order.status}</p>
-            <div>
-              <h4>Products:</h4>
-              {order.products.map((product) => (
-                <div key={product.id}>
+        orders.map((order) => {
+          const totalPrice = order.products.reduce(
+            (sum, product) => sum + product.price * product.quantity,
+            0,
+          );
+
+          return (
+            <div
+              key={order.id}
+              className="flex w-full flex-col gap-4 rounded-md border p-4"
+            >
+              <div className="flex w-full justify-between">
+                <h3 className="text-lg font-bold">
+                  Bestellung #{order.order_number}
+                </h3>
+                <div className="flex items-center gap-4">
+                  <p>Status: {order.status}</p>
                   <p>
-                    {product.productName} - {product.quantity} pcs
+                    Gesamt:{" "}
+                    {totalPrice.toLocaleString("de-DE", {
+                      style: "currency",
+                      currency: "EUR",
+                    })}
                   </p>
                 </div>
-              ))}
+              </div>
+              <p>Bezahlbetreff: {order.paymentID}</p>
+              <div>
+                <h4>Produkte:</h4>
+                {order.products.map((product) => (
+                  <div key={product.id}>
+                    <p>
+                      {product.quantity}x {product.productName}, {product.color}
+                      , {product.size}
+                    </p>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
     </div>
   );
 };

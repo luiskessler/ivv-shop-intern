@@ -84,8 +84,8 @@ export default function Home() {
                           )}
                         </p>
                       </div>
-                      <div className="flex w-full justify-between border">
-                        <div className="flex w-fit flex-col gap-4 border">
+                      <div className="flex w-full justify-between">
+                        <div className="flex w-fit flex-col gap-4">
                           {item.size && item.colorVariant && (
                             <div className="flex flex-col gap-1">
                               <p>{item.size.toUpperCase()}</p>

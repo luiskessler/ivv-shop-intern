@@ -37,7 +37,7 @@ export const productRouter = createTRPCRouter({
         });
     }),
   
-    createPresignedURL: protectedProcedure
+    createPresignedURL: adminProcedure
     .input(z.object({
       fileName: z.string(),
       fileType: z.string(),
@@ -69,7 +69,7 @@ export const productRouter = createTRPCRouter({
       }
     }),
   
-  getAllProducts: publicProcedure
+  getAllProducts: adminProcedure
     .query(async ({ ctx }) => {
       const products = await ctx.db.product.findMany();
       
